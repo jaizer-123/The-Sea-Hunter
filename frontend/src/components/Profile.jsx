@@ -11,14 +11,12 @@ const Profile = () => {
   const getRoleBadge = (role) => {
     const badgeStyles = {
       admin: 'bg-red-100 text-red-800',
-      supply_officer: 'bg-blue-100 text-blue-800',
-      staff: 'bg-green-100 text-green-800'
+      user: 'bg-blue-100 text-blue-800',
     };
 
     const roleLabels = {
       admin: 'Administrator',
-      supply_officer: 'Supply Officer',
-      staff: 'Staff Member'
+      user: 'User',
     };
 
     return (
@@ -26,6 +24,14 @@ const Profile = () => {
         {roleLabels[role]}
       </span>
     );
+  };
+
+  const getRoleDescription = (role) => {
+    const descriptions = {
+      admin: 'Full system administrator with all privileges',
+      user: 'Regular user with basic access rights',
+    };
+    return descriptions[role] || '';
   };
 
   if (!user) {
@@ -60,10 +66,15 @@ const Profile = () => {
                 <dd className="mt-1 text-sm text-gray-900">{user.email}</dd>
               </div>
               
-              <div>
+              <div className="sm:col-span-2">
                 <dt className="text-sm font-medium text-gray-500">Role</dt>
                 <dd className="mt-1 text-sm text-gray-900">
-                  {getRoleBadge(user.role)}
+                  <div className="flex items-center space-x-2">
+                    {getRoleBadge(user.role)}
+                    <span className="text-gray-500 text-sm">
+                      {getRoleDescription(user.role)}
+                    </span>
+                  </div>
                 </dd>
               </div>
               
@@ -72,19 +83,34 @@ const Profile = () => {
                 <dd className="mt-1 text-sm text-gray-900">{user.id}</dd>
               </div>
               
-              {user.office && (
-                <>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Office</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{user.office.name}</dd>
-                  </div>
-                  
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Office Location</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{user.office.location}</dd>
-                  </div>
-                </>
-              )}
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Account Status</dt>
+                <dd className="mt-1">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Active
+                  </span>
+                </dd>
+              </div>
+
+              <div className="sm:col-span-2">
+                <dt className="text-sm font-medium text-gray-500">Permissions</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {user.role === 'admin' ? (
+                    <ul className="list-disc list-inside space-y-1">
+                      <li>Manage all users and accounts</li>
+                      <li>Full system configuration access</li>
+                      <li>View and manage all data</li>
+                      <li>System administration privileges</li>
+                    </ul>
+                  ) : (
+                    <ul className="list-disc list-inside space-y-1">
+                      <li>Basic system access</li>
+                      <li>Personal profile management</li>
+                      <li>Standard user operations</li>
+                    </ul>
+                  )}
+                </dd>
+              </div>
             </dl>
             
             <div className="mt-8 pt-6 border-t border-gray-200">

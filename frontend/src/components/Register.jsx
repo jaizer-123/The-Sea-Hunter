@@ -8,27 +8,34 @@ const Register = () => {
     email: '',
     password: '',
     password_confirmation: '',
-    role: 'staff',
-    office_id: '',
+    role: 'user', // Default to 'user'
   });
-  const [offices, setOffices] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { register, user } = useAuth();
+  const { register, user, isAdmin } = useAuth();
   const navigate = useNavigate();
 
-  // Fetch offices for dropdown
+  // Check if admin already exists
+  const [adminExists, setAdminExists] = useState(false);
+
   useEffect(() => {
-    const fetchOffices = async () => {
+    const checkAdminExists = async () => {
       try {
-        const response = await fetch('/api/offices');
-        const data = await response.json();
-        setOffices(data.data || []);
+        // You might want to create an API endpoint to check if admin exists
+        // For now, we'll check localStorage or make a simple API call
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          // If user is logged in and is admin, set adminExists to true
+          if (isAdmin()) {
+            setAdminExists(true);
+          }
+        }
       } catch (error) {
-        console.error('Error fetching offices:', error);
+        console.error('Error checking admin status:', error);
       }
     };
-    fetchOffices();
-  }, []);
+    
+    checkAdminExists();
+  }, [isAdmin]);
 
   const handleChange = (e) => {
     setFormData({
@@ -42,6 +49,12 @@ const Register = () => {
     
     if (formData.password !== formData.password_confirmation) {
       alert('Passwords do not match');
+      return;
+    }
+
+    // Prevent admin registration if admin already exists and current user is not admin
+    if (formData.role === 'admin' && adminExists && !isAdmin()) {
+      alert('Administrator account already exists. Please contact system administrator.');
       return;
     }
 
@@ -62,10 +75,23 @@ const Register = () => {
   const getRoleLabel = (role) => {
     const roleLabels = {
       admin: 'Administrator',
-      supply_officer: 'Supply Officer',
-      staff: 'Staff Member'
+      user: 'User'
     };
     return roleLabels[role] || role;
+  };
+
+  const getRoleDescription = (role) => {
+    const descriptions = {
+      admin: 'Full system access with administrative privileges',
+      user: 'Basic system access for regular operations'
+    };
+    return descriptions[role] || '';
+  };
+
+  // Determine if admin option should be available
+  const canRegisterAsAdmin = () => {
+    // Allow admin registration only if no admin exists OR current user is admin
+    return !adminExists || isAdmin();
   };
 
   return (
@@ -132,16 +158,18 @@ const Register = () => {
                 value={formData.role}
                 onChange={handleChange}
               >
-                <option value="staff">Staff Member</option>
-                <option value="supply_officer">Supply Officer</option>
-                <option value="admin">Administrator</option>
+                <option value="user">User</option>
+                {canRegisterAsAdmin() && (
+                  <option value="admin">Administrator</option>
+                )}
               </select>
               <p className="mt-1 text-xs text-gray-500">
-                {getRoleLabel(formData.role)} - {
-                  formData.role === 'admin' ? 'Full system access' :
-                  formData.role === 'supply_officer' ? 'Manages inventory and approvals' :
-                  'Basic system access for daily operations'
-                }
+                {getRoleLabel(formData.role)} - {getRoleDescription(formData.role)}
+                {formData.role === 'admin' && adminExists && (
+                  <span className="block text-orange-600 font-medium mt-1">
+                    Note: An administrator already exists in the system.
+                  </span>
+                )}
               </p>
             </div>
 
@@ -199,6 +227,17 @@ const Register = () => {
               )}
             </button>
           </div>
+
+          {adminExists && !isAdmin() && (
+            <div className="text-center">
+              <p className="text-sm text-gray-600">
+                Need administrator access?{' '}
+                <span className="text-orange-600 font-medium">
+                  Please contact the system administrator.
+                </span>
+              </p>
+            </div>
+          )}
         </form>
       </div>
     </div>

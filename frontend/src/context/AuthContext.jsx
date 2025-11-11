@@ -107,8 +107,7 @@ export const AuthProvider = ({ children }) => {
 
   // Role checking helper functions
   const isAdmin = () => user?.role === 'admin';
-  const isSupplyOfficer = () => user?.role === 'supply_officer';
-  const isStaff = () => user?.role === 'staff';
+  const isUser = () => user?.role === 'user';
   
   const hasRole = (roles) => {
     if (!user) return false;
@@ -119,8 +118,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const canManageUsers = () => isAdmin();
-  const canManageInventory = () => isAdmin() || isSupplyOfficer();
-  const canApproveRequests = () => isAdmin() || isSupplyOfficer();
+  const canManageInventory = () => isAdmin();
+  const canApproveRequests = () => isAdmin();
 
   const value = {
     user,
@@ -132,8 +131,7 @@ export const AuthProvider = ({ children }) => {
     
     // Role checking functions
     isAdmin,
-    isSupplyOfficer,
-    isStaff,
+    isUser,
     hasRole,
     canManageUsers,
     canManageInventory,
