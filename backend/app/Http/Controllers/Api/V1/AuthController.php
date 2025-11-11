@@ -25,14 +25,13 @@ class AuthController extends Controller
             'name'     => $validated['name'],
             'email'    => $validated['email'],
             'password' => $validated['password'],
-            'role'     => $validated['role'] ?? 'staff', // Default to 'staff'
-            'office_id' => $validated['office_id'] ?? null, // Add office_id if needed
+            'role'     => $validated['role'] ?? User::ROLE_USER, 
         ]);
 
         $token = $user->createToken('auth_token', [$user->role])->plainTextToken;
 
         return $this->ok('User registered successfully', [
-            'user'  => $user->load('office'), // Eager load office relationship
+            'user'  => $user,
             'token' => $token,
             'role'  => $user->role,
         ]);
@@ -45,7 +44,7 @@ class AuthController extends Controller
     {
         $validated = $request->validated();
 
-        $user = User::with('office')->where('email', $validated['email'])->first();
+        $user = User::where('email', $validated['email'])->first();
         
         if (!$user || !Hash::check($validated['password'], $user->password)) {
             return $this->error('Invalid email or password', 401);
@@ -77,7 +76,7 @@ class AuthController extends Controller
      */
     public function profile(Request $request)
     {
-        $user = $request->user()->load('office');
+        $user = $request->user();
         
         return $this->ok('User profile retrieved successfully', [
             'user' => $user,
@@ -99,7 +98,7 @@ class AuthController extends Controller
         $user->update($validated);
 
         return $this->ok('Profile updated successfully', [
-            'user' => $user->fresh('office'),
+            'user' => $user->fresh(),
         ]);
     }
 
